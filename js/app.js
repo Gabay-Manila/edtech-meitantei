@@ -32,7 +32,7 @@ const State = {
   currentLevel: 1,      // 選択中のレベル（1/2/3）
   currentQ    : 0,      // 現在の問題インデックス
   pending     : null,   // 最後に選んだ選択肢タイプ ('correct'|'wrong'|'funny')
-  clearedCases: new Set(JSON.parse(localStorage.getItem('cleared') || '[]')),
+  clearedCases: (() => { try { return new Set(JSON.parse(localStorage.getItem('cleared') || '[]')); } catch(e) { return new Set(); } })(),
 };
 
 // クリア状態を保存
@@ -57,12 +57,23 @@ function showScreen(id) {
 // ============================================================
 function renderTitle() {
   const list = document.getElementById('case-list');
-  if (!list) return;
+  if (!list) {
+    console.error('[app.js] #case-list が見つかりません');
+    return;
+  }
   list.innerHTML = '';
 
   REGISTRY.forEach(reg => {
     const data = window[reg.dataVar];
-    const cleared = State.clearedCases.has(reg.id);
+
+    // ── デバッグ：データ取得状況をコンソールに出力 ──
+    if (data) {
+      console.log(`[app.js] ${reg.dataVar} 読み込みOK:`, data.title.jp);
+    } else {
+      console.warn(`[app.js] ${reg.dataVar} が window に存在しません。data/${reg.dataVar.toLowerCase().replace('_data','')}.js が読み込まれているか確認してください。`);
+    }
+
+    const cleared  = State.clearedCases.has(reg.id);
     const unlocked = reg.unlocked || cleared || (reg.id === 2 && State.clearedCases.has(1));
 
     const card = document.createElement('div');
@@ -71,8 +82,9 @@ function renderTitle() {
     const statusText  = cleared ? 'CLEAR！' : unlocked ? '捜査中' : 'まもなく';
     const statusClass = cleared ? 'b-clear' : unlocked ? 'b-open'  : 'b-lock';
 
-    const titleJp = data ? data.title.jp : `CASE ${String(reg.id).padStart(2,'0')}`;
-    const titleEn = data ? data.title.en : '???';
+    // data が未ロードでも ???  ではなく CASE番号を表示
+    const titleJp = data ? data.title.jp : '（データ読み込み中…）';
+    const titleEn = data ? data.title.en : 'Loading...';
 
     card.innerHTML = `
       <div class="c-num">CASE ${String(reg.id).padStart(2,'0')}</div>
@@ -446,16 +458,53 @@ function _bindEvents() {
   if (titleBtn) titleBtn.addEventListener('click', renderTitle);
 
   // グローバル関数として公開（HTML onclickから呼ぶため）
-  window.toggleVoice    = () => Voice.toggle();
-  window.toggleSub      = () => { Subtitle.toggle(); Subtitle.sync(); };
-  window.speakEl        = (id) => Voice.speakEl(id);
+  // Voice/Subtitle が未定義でもクラッシュしないよう防御
+  window.toggleVoice = () => {
+    try { if (typeof Voice !== 'undefined') Voice.toggle(); }
+    catch(e) { console.warn('[app.js] toggleVoice error:', e); }
+  };
+  window.toggleSub = () => {
+    try {
+      if (typeof Subtitle !== 'undefined') { Subtitle.toggle(); Subtitle.sync(); }
+    } catch(e) { console.warn('[app.js] toggleSub error:', e); }
+  };
+  window.speakEl = (id) => {
+    try { if (typeof Voice !== 'undefined') Voice.speakEl(id); }
+    catch(e) { console.warn('[app.js] speakEl error:', e); }
+  };
 }
 
 // ============================================================
 // 🚀 アプリ起動
 // ============================================================
-document.addEventListener('DOMContentLoaded', () => {
-  Voice.init();
-  _bindEvents();
-  renderTitle();
-});
+function _boot() {
+  try {
+    console.log('[app.js] 起動開始');
+
+    // Voice 初期化（voice.js が読めていない場合はスキップ）
+    if (typeof Voice !== 'undefined') {
+      Voice.init();
+      console.log('[app.js] Voice.init() 完了');
+    } else {
+      console.warn('[app.js] voice.js が読み込まれていません。音声なしで続行します。');
+    }
+
+    if (typeof Subtitle === 'undefined') {
+      console.warn('[app.js] subtitle.js が読み込まれていません。字幕なしで続行します。');
+    }
+
+    _bindEvents();
+    renderTitle();
+    console.log('[app.js] renderTitle() 完了');
+
+  } catch(e) {
+    console.error('[app.js] 起動エラー:', e);
+  }
+}
+
+// DOMContentLoaded または既にDOM構築済みの場合どちらでも対応
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _boot);
+} else {
+  _boot();
+}
