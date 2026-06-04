@@ -1,0 +1,488 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Oswald:wght@600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{--navy:#0a1628;--navy2:#142240;--gold:#c8a84b;--gold-light:#f0d080;--cream:#f5f0e0;--paper:#faf6ec;--ink:#1a1208;--muted:#6b5e40;}
+#wrap{width:100%;max-width:390px;margin:0 auto;font-family:'Noto Sans JP',sans-serif;}
+.phone{background:var(--navy);border-radius:16px;overflow:hidden;width:100%;aspect-ratio:9/16;display:flex;flex-direction:column;position:relative;}
+.screen{display:none;width:100%;height:100%;flex-direction:column;}
+.screen.active{display:flex;}
+.badge-strip{background:var(--gold);color:var(--navy);font-size:10px;font-weight:700;letter-spacing:3px;padding:5px 0;text-align:center;width:100%;flex-shrink:0;}
+.t-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 20px 20px;gap:0;}
+.title-jp{font-family:'Oswald',sans-serif;font-size:12px;color:var(--gold);letter-spacing:5px;text-align:center;margin-top:14px;}
+.title-main{font-size:clamp(20px,5vw,26px);font-weight:700;color:var(--cream);text-align:center;line-height:1.3;margin:4px 0;}
+.title-ruby{font-size:10px;color:var(--gold);letter-spacing:2px;text-align:center;margin-bottom:14px;}
+.ctrl-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;justify-content:center;}
+.pill{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--gold);letter-spacing:1px;cursor:pointer;padding:6px 12px;border:1px solid rgba(200,168,75,0.4);border-radius:20px;background:transparent;transition:all .2s;font-family:'Noto Sans JP',sans-serif;}
+.pill.on{background:rgba(200,168,75,0.2);border-color:var(--gold);}
+.pill .dot{width:7px;height:7px;border-radius:50%;background:rgba(200,168,75,0.4);flex-shrink:0;}
+.pill.on .dot{background:var(--gold);}
+.case-list{width:100%;display:flex;flex-direction:column;gap:8px;}
+.case-card{background:var(--navy2);border:1px solid rgba(200,168,75,0.3);border-radius:10px;padding:11px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all .2s;}
+.case-card:active:not(.locked){border-color:var(--gold);background:#1e3060;}
+.case-card.locked{opacity:.4;cursor:default;}
+.c-num{font-family:'Oswald',sans-serif;font-size:10px;color:var(--gold);letter-spacing:1px;min-width:52px;}
+.c-titles{flex:1;min-width:0;}
+.c-jp{font-size:12px;color:var(--cream);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.c-en{font-size:10px;color:rgba(200,168,75,0.6);font-style:italic;margin-top:1px;}
+.c-badge{font-size:10px;padding:3px 8px;border-radius:20px;flex-shrink:0;}
+.b-open{background:rgba(200,168,75,0.2);color:var(--gold);}
+.b-clear{background:rgba(26,122,58,0.3);color:#5dbb7a;}
+.b-lock{background:rgba(100,90,80,0.3);color:#887766;}
+.s-header{background:var(--navy);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.s-lbl{font-family:'Oswald',sans-serif;font-size:10px;color:var(--gold);letter-spacing:2px;}
+.s-ttl{font-size:12px;color:var(--cream);font-weight:500;}
+.hdr-pills{display:flex;gap:6px;align-items:center;}
+.scene{flex-shrink:0;height:28%;background:#e0d8c8;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.scene-emoji{font-size:clamp(32px,8vw,48px);}
+.sc-caption{position:absolute;bottom:5px;right:8px;text-align:right;}
+.sc-jp{font-size:10px;color:#8a7a60;}
+.sc-en{font-size:9px;color:#aaa090;font-style:italic;display:none;}
+.sc-en.show{display:block;}
+.haruto-wrap{position:absolute;bottom:5px;left:8px;display:flex;flex-direction:column;align-items:flex-start;gap:3px;}
+.h-bubble{background:white;border:1px solid #333;border-radius:8px 8px 8px 0;padding:3px 8px;font-size:10px;color:var(--ink);line-height:1.4;}
+.h-face{font-size:20px;}
+.dlg{background:var(--navy);padding:10px 14px;flex-shrink:0;position:relative;}
+.dlg-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+.dlg-texts{flex:1;min-width:0;}
+.dlg-speaker{font-size:10px;color:var(--gold);letter-spacing:1px;margin-bottom:2px;}
+.dlg-jp{font-size:13px;color:var(--cream);line-height:1.6;}
+.dlg-en{font-size:11px;color:rgba(245,240,224,0.55);font-style:italic;line-height:1.5;margin-top:3px;display:none;}
+.dlg-en.show{display:block;}
+.speak-btn{background:rgba(200,168,75,0.15);border:1px solid rgba(200,168,75,0.5);border-radius:8px;padding:6px 9px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;gap:4px;font-size:11px;color:var(--gold);font-family:'Noto Sans JP',sans-serif;transition:all .2s;margin-top:2px;}
+.speak-btn:active{background:rgba(200,168,75,0.3);}
+.speak-btn.speaking{border-color:var(--gold);background:rgba(200,168,75,0.25);}
+.speak-icon{font-size:14px;}
+.sub-bar{background:rgba(0,0,0,0.75);padding:6px 14px;min-height:30px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sub-txt{font-size:11px;color:#fffde8;text-align:center;line-height:1.5;font-style:italic;display:none;}
+.sub-txt.show{display:block;}
+.q-hdr{background:var(--navy);padding:9px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.q-lbl{font-family:'Oswald',sans-serif;font-size:10px;color:var(--gold);letter-spacing:2px;}
+.q-dots{display:flex;gap:5px;align-items:center;}
+.qdot{width:8px;height:8px;border-radius:50%;background:rgba(200,168,75,0.3);border:1px solid rgba(200,168,75,0.5);}
+.qdot.done{background:var(--gold);}
+.qdot.cur{background:transparent;border-color:var(--gold);}
+.hint-box{background:var(--navy);padding:9px 14px;flex-shrink:0;}
+.hint-row{display:flex;align-items:flex-start;gap:8px;}
+.hint-texts{flex:1;min-width:0;}
+.hint-jp{font-size:12px;color:var(--gold-light);line-height:1.5;}
+.hint-en{font-size:10px;color:rgba(240,208,128,0.55);font-style:italic;margin-top:3px;line-height:1.4;display:none;}
+.hint-en.show{display:block;}
+.choices{padding:10px 12px;display:flex;flex-direction:column;gap:7px;flex:1;justify-content:center;}
+.ch-btn{background:white;border:1.5px solid #ddd0b0;border-radius:10px;padding:12px 12px;cursor:pointer;display:flex;align-items:flex-start;gap:9px;transition:all .2s;font-family:'Noto Sans JP',sans-serif;min-height:48px;text-align:left;width:100%;}
+.ch-btn:active{border-color:var(--gold);background:#fffdf5;}
+.ch-num{width:26px;height:26px;border-radius:50%;background:var(--navy);color:var(--gold);font-size:11px;font-family:'Oswald',sans-serif;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.ch-inner{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1;}
+.ch-jp{font-size:13px;color:var(--ink);font-weight:500;line-height:1.4;}
+.ch-en{font-size:11px;color:#7a6a50;font-style:italic;display:none;line-height:1.3;}
+.ch-en.show{display:block;}
+.ch-play{background:rgba(10,22,40,0.08);border:none;border-radius:6px;padding:4px 7px;cursor:pointer;font-size:12px;flex-shrink:0;margin-top:2px;display:flex;align-items:center;}
+.ch-play:active{background:rgba(10,22,40,0.15);}
+.fb-hdr{padding:10px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.fb-hdr.correct{background:#1a3d28;}
+.fb-hdr.wrong{background:#3d1a1a;}
+.fb-hdr.funny{background:#1a2a4a;}
+.fb-ico{font-size:20px;}
+.fb-lbl{font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:2px;}
+.fb-hdr.correct .fb-lbl{color:#7de0a0;}
+.fb-hdr.wrong .fb-lbl{color:#e07d7d;}
+.fb-hdr.funny .fb-lbl{color:#7db8e0;}
+.fb-body{padding:12px;flex:1;display:flex;flex-direction:column;gap:9px;overflow-y:auto;}
+.react-box{background:var(--navy);border-radius:8px;padding:12px;}
+.react-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+.react-texts{flex:1;min-width:0;}
+.react-spk{font-size:10px;color:var(--gold);letter-spacing:1px;margin-bottom:3px;}
+.react-jp{font-size:12px;color:var(--cream);line-height:1.6;white-space:pre-line;}
+.react-en{font-size:11px;color:rgba(245,240,224,0.5);font-style:italic;border-top:1px solid rgba(200,168,75,0.2);padding-top:5px;margin-top:5px;line-height:1.5;display:none;}
+.react-en.show{display:block;}
+.tip-box{background:rgba(200,168,75,0.1);border-left:3px solid var(--gold);padding:9px 12px;}
+.tip-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+.tip-texts{flex:1;min-width:0;}
+.tip-lbl{font-size:9px;color:var(--gold);letter-spacing:2px;margin-bottom:2px;}
+.tip-jp{font-size:12px;color:var(--ink);line-height:1.5;}
+.tip-en{font-size:11px;color:var(--muted);font-style:italic;margin-top:3px;line-height:1.4;display:none;}
+.tip-en.show{display:block;}
+.fb-btn{background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:13px 16px;font-family:'Noto Sans JP',sans-serif;font-size:14px;font-weight:700;cursor:pointer;width:100%;flex-shrink:0;}
+.fb-btn:active{background:var(--gold-light);}
+#intro-screen{background:var(--paper);}
+.intro-body{flex:1;padding:12px;display:flex;flex-direction:column;gap:9px;overflow-y:auto;}
+.role-box{background:rgba(200,168,75,0.1);border:1px solid rgba(200,168,75,0.3);border-radius:8px;padding:11px;display:flex;gap:9px;align-items:flex-start;}
+.role-en{font-size:11px;color:var(--muted);font-style:italic;margin-top:3px;display:none;}
+.role-en.show{display:block;}
+.start-btn{background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:14px 16px;font-family:'Noto Sans JP',sans-serif;font-size:15px;font-weight:700;cursor:pointer;width:100%;flex-shrink:0;}
+.start-btn:active{background:var(--gold-light);}
+#clear-screen{background:var(--navy);align-items:center;justify-content:center;padding:20px;}
+.clr-flash{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:5px;color:var(--gold);text-align:center;margin-bottom:8px;}
+.clr-stamp{font-size:clamp(40px,10vw,56px);text-align:center;margin-bottom:10px;animation:stmp .5s ease-out;}
+@keyframes stmp{from{transform:scale(2);opacity:0;}to{transform:scale(1);opacity:1;}}
+.clr-title{font-family:'Oswald',sans-serif;font-size:clamp(24px,7vw,32px);color:var(--gold);letter-spacing:4px;text-align:center;margin-bottom:6px;}
+.clr-sub{font-size:12px;color:var(--cream);text-align:center;line-height:1.7;margin-bottom:14px;}
+.truth-box{background:var(--navy2);border:1px solid var(--gold);border-radius:8px;padding:14px 18px;width:100%;margin-bottom:12px;text-align:center;}
+.truth-lbl{font-size:9px;color:var(--gold);letter-spacing:3px;margin-bottom:6px;}
+.truth-jp{font-size:16px;font-weight:700;color:var(--cream);line-height:1.5;}
+.truth-en{font-size:11px;color:rgba(245,240,224,0.55);margin-top:4px;font-style:italic;display:none;}
+.truth-en.show{display:block;}
+.h-cmt{font-size:11px;color:rgba(245,240,224,0.6);text-align:center;font-style:italic;margin-bottom:14px;line-height:1.6;white-space:pre-line;}
+.clr-btns{display:flex;gap:8px;width:100%;}
+.btn-sec{background:transparent;border:1px solid rgba(200,168,75,0.5);border-radius:8px;padding:12px 0;font-family:'Noto Sans JP',sans-serif;font-size:13px;color:var(--gold);cursor:pointer;flex:1;transition:all .2s;}
+.btn-sec:active{background:rgba(200,168,75,0.1);}
+.voice-warn{background:rgba(200,168,75,0.1);border:1px solid rgba(200,168,75,0.3);border-radius:8px;padding:8px 12px;font-size:11px;color:var(--gold);text-align:center;display:none;}
+</style>
+
+<h2 style="position:absolute;width:1px;height:1px;overflow:hidden">名探偵ゲーム 音声対応スマホ版</h2>
+<div id="wrap">
+<div class="phone">
+
+<div id="title-screen" class="screen active">
+  <div class="badge-strip">JUNIOR DETECTIVE SERIES</div>
+  <div class="t-body">
+    <div class="title-jp">名探偵ゲーム</div>
+    <div class="title-main">日本語推理<br>アドベンチャー</div>
+    <div class="title-ruby">NIHONGO SUIRI ADVENTURE</div>
+    <div class="ctrl-row">
+      <button class="pill on" id="voice-pill" onclick="toggleVoice()"><span class="dot"></span><span id="voice-lbl">🔊 音声: ON</span></button>
+      <button class="pill" id="sub-pill" onclick="toggleSub()"><span class="dot"></span><span id="sub-lbl">EN: OFF</span></button>
+    </div>
+    <div id="voice-warn" class="voice-warn">このブラウザは日本語TTSに未対応の場合があります</div>
+    <div class="case-list">
+      <div class="case-card" id="case1-btn">
+        <div class="c-num">CASE 01</div>
+        <div class="c-titles">
+          <div class="c-jp">消えたショートケーキ事件</div>
+          <div class="c-en">The Case of the Missing Shortcake</div>
+        </div>
+        <div class="c-badge b-open" id="case1-badge">捜査中</div>
+      </div>
+      <div class="case-card locked">
+        <div class="c-num">CASE 02</div>
+        <div class="c-titles"><div class="c-jp">行方不明のランドセル事件</div><div class="c-en">The Missing Backpack Case</div></div>
+        <div class="c-badge b-lock">まもなく</div>
+      </div>
+      <div class="case-card locked">
+        <div class="c-num">CASE 03</div>
+        <div class="c-titles"><div class="c-jp">なぞのラブレター事件</div><div class="c-en">The Mystery Love Letter Case</div></div>
+        <div class="c-badge b-lock">まもなく</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="intro-screen" class="screen">
+  <div class="s-header">
+    <div><div class="s-lbl">CASE 01</div><div class="s-ttl">消えたショートケーキ事件</div></div>
+    <div class="hdr-pills">
+      <button class="pill on" onclick="toggleVoice()"><span class="dot"></span><span class="voice-lbl-sm">🔊</span></button>
+      <button class="pill" onclick="toggleSub()"><span class="dot"></span><span class="sub-lbl-sm">EN</span></button>
+    </div>
+  </div>
+  <div class="scene" style="height:30%;">
+    <svg width="100%" height="100%" viewBox="0 0 360 120" xmlns="http://www.w3.org/2000/svg">
+      <rect width="360" height="120" fill="#d8d0c0"/>
+      <rect x="0" y="78" width="360" height="42" fill="#c8bea8"/>
+      <rect x="16" y="10" width="68" height="74" rx="4" fill="#a89878"/>
+      <rect x="20" y="14" width="60" height="66" rx="2" fill="#f5efe0"/>
+      <rect x="24" y="20" width="10" height="13" rx="2" fill="#d4c090"/>
+      <rect x="38" y="20" width="10" height="13" rx="2" fill="#d4c090"/>
+      <rect x="24" y="38" width="10" height="13" rx="2" fill="#d4c090"/>
+      <rect x="38" y="38" width="10" height="13" rx="2" fill="#d4c090"/>
+      <rect x="130" y="48" width="100" height="40" rx="4" fill="#e8d8b0"/>
+      <rect x="160" y="30" width="40" height="20" rx="3" fill="#c8a858"/>
+      <rect x="140" y="82" width="24" height="8" rx="2" fill="#b09048"/>
+      <rect x="192" y="82" width="24" height="8" rx="2" fill="#b09048"/>
+      <rect x="272" y="16" width="54" height="72" rx="6" fill="#ccc0a8"/>
+      <rect x="277" y="22" width="44" height="42" rx="3" fill="#7090b8"/>
+      <rect x="277" y="68" width="44" height="10" rx="2" fill="#b0a090"/>
+      <rect x="280" y="90" width="10" height="24" rx="3" fill="#b0a090"/>
+      <rect x="306" y="90" width="10" height="24" rx="3" fill="#b0a090"/>
+      <text x="180" y="114" text-anchor="middle" font-size="9" fill="#8a7a60" font-family="sans-serif">リビングルーム / Living Room</text>
+      <g transform="translate(310,42)">
+        <circle cx="0" cy="-16" r="10" fill="#f5d09a"/>
+        <rect x="-7" y="-6" width="14" height="18" rx="4" fill="#4a6fa5"/>
+        <text x="0" y="-13" text-anchor="middle" font-size="7" fill="#5a3a10" font-family="sans-serif">ハルト</text>
+      </g>
+      <g transform="translate(200,44)" opacity="0.85">
+        <rect x="-16" y="-24" width="32" height="13" rx="6" fill="white"/>
+        <text x="0" y="-14" text-anchor="middle" font-size="8" fill="#cc2233" font-family="sans-serif">大変だ！</text>
+        <polygon points="-3,-11 3,-11 0,-7" fill="white"/>
+      </g>
+    </svg>
+  </div>
+  <div class="dlg">
+    <div class="dlg-top">
+      <div class="dlg-texts">
+        <div class="dlg-speaker">ハルト</div>
+        <div class="dlg-jp" id="intro-jp">「大変だ！冷蔵庫のケーキがなくなってる！一緒に犯人を見つけよう！」</div>
+        <div class="dlg-en" id="intro-en">"Oh no! The cake in the fridge is gone! Let's find the culprit together!"</div>
+      </div>
+      <button class="speak-btn" onclick="speakEl('intro-jp')" title="音声再生">
+        <span class="speak-icon">🔊</span>
+      </button>
+    </div>
+  </div>
+  <div class="sub-bar"><div class="sub-txt" id="intro-sub">"Oh no! The cake in the fridge is gone! Let's find the culprit together!"</div></div>
+  <div class="intro-body">
+    <div class="role-box">
+      <div style="font-size:20px;flex-shrink:0;">🕵️</div>
+      <div>
+        <div style="font-size:10px;color:var(--gold);letter-spacing:1px;margin-bottom:3px;">YOUR ROLE</div>
+        <div style="font-size:12px;color:var(--ink);line-height:1.5;">あなたは<b>新米探偵</b>。ケンジに上手く話しかけて証拠を見つけよう！</div>
+        <div class="role-en" id="intro-role-en">You're a rookie detective. Talk to Kenji cleverly and find the evidence!</div>
+      </div>
+    </div>
+    <button class="start-btn" id="start-btn">捜査を始める！ Start!</button>
+  </div>
+</div>
+
+<div id="question-screen" class="screen">
+  <div class="q-hdr">
+    <div class="q-lbl" id="q-lbl">QUESTION 1 / 3</div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <button class="pill on" onclick="toggleVoice()"><span class="dot"></span><span class="voice-lbl-sm">🔊</span></button>
+      <button class="pill" onclick="toggleSub()"><span class="dot"></span><span class="sub-lbl-sm">EN</span></button>
+      <div class="q-dots">
+        <div class="qdot cur" id="d0"></div>
+        <div class="qdot" id="d1"></div>
+        <div class="qdot" id="d2"></div>
+      </div>
+    </div>
+  </div>
+  <div class="scene" id="q-scene"></div>
+  <div class="hint-box">
+    <div class="hint-row">
+      <div class="hint-texts">
+        <div class="hint-jp" id="hint-jp"></div>
+        <div class="hint-en" id="hint-en"></div>
+      </div>
+      <button class="speak-btn" id="hint-speak-btn" onclick="speakEl('hint-jp')" title="ヒントを読む">
+        <span class="speak-icon">🔊</span>
+      </button>
+    </div>
+  </div>
+  <div class="choices" id="choices"></div>
+</div>
+
+<div id="feedback-screen" class="screen">
+  <div class="fb-hdr" id="fb-hdr">
+    <div class="fb-ico" id="fb-ico"></div>
+    <div class="fb-lbl" id="fb-lbl"></div>
+    <div style="margin-left:auto;display:flex;gap:6px;">
+      <button class="pill on" onclick="toggleVoice()"><span class="dot"></span><span class="voice-lbl-sm">🔊</span></button>
+      <button class="pill" onclick="toggleSub()"><span class="dot"></span><span class="sub-lbl-sm">EN</span></button>
+    </div>
+  </div>
+  <div class="fb-body">
+    <div class="react-box">
+      <div class="react-top">
+        <div class="react-texts">
+          <div class="react-spk" id="fb-spk"></div>
+          <div class="react-jp" id="fb-rjp"></div>
+          <div class="react-en" id="fb-ren"></div>
+        </div>
+        <button class="speak-btn" onclick="speakEl('fb-rjp')" title="リアクションを読む"><span class="speak-icon">🔊</span></button>
+      </div>
+    </div>
+    <div class="tip-box">
+      <div class="tip-top">
+        <div class="tip-texts">
+          <div class="tip-lbl">JAPANESE TIP</div>
+          <div class="tip-jp" id="tip-jp"></div>
+          <div class="tip-en" id="tip-en"></div>
+        </div>
+        <button class="speak-btn" onclick="speakEl('tip-jp')" title="ヒントを読む"><span class="speak-icon">🔊</span></button>
+      </div>
+    </div>
+    <button class="fb-btn" id="fb-btn">つぎへ</button>
+  </div>
+</div>
+
+<div id="clear-screen" class="screen">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+    <div class="clr-flash">CASE SOLVED</div>
+    <button class="pill on" onclick="toggleVoice()"><span class="dot"></span><span class="voice-lbl-sm">🔊</span></button>
+    <button class="pill" onclick="toggleSub()"><span class="dot"></span><span class="sub-lbl-sm">EN</span></button>
+  </div>
+  <div class="clr-stamp">🏅</div>
+  <div class="clr-title">CLEAR！</div>
+  <div class="clr-sub">名探偵認定！<br><span id="clr-sub-en" style="font-size:11px;color:rgba(245,240,224,0.55);font-style:italic;display:none;">You've been certified a great detective!</span></div>
+  <div class="truth-box">
+    <div class="truth-lbl">CLIMAX PHRASE</div>
+    <div class="truth-jp" id="truth-phrase">「真実は、いつもひとつ！」</div>
+    <div class="truth-en" id="truth-en">"The truth is always just one!"</div>
+  </div>
+  <div class="h-cmt" id="h-cmt"></div>
+  <div class="clr-btns">
+    <button class="btn-sec" id="retry-btn">もう一度</button>
+    <button class="btn-sec" id="title-btn">タイトルへ</button>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script>
+const DATA = {
+  hints:["ハルト：ケンジが怪しいな。どうやって話しかける？","ハルト：ケンジはずっと部屋にいたと言っているね。でも何か怪しいところはない？","ハルト：証拠はそろった！名探偵の決め台詞でビシッと決めよう！"],
+  hintsEn:["Haruto: \"Kenji looks suspicious. How will you talk to him?\"","Haruto: \"Kenji says he's been in the room the whole time. Does anything seem off?\"","Haruto: \"All evidence gathered! Strike with the famous detective's line!\""],
+  sceneEmoji:["🛋️","👀","⚡"],
+  sceneJp:["ケンジがソファでテレビを見ている","ケンジの顔をよく見ている","証拠がそろった！クライマックス！"],
+  sceneEn:["Kenji is watching TV on the sofa","Looking carefully at Kenji's face","All evidence gathered! The climax!"],
+  harutoLines:["がんばれ！","もう少し！","クライマックス！"],
+  choices:[
+    [{jp:"「ケーキ、食べましたか？」",en:"\"Did you eat the cake?\"",t:"wrong"},{jp:"「いま、何をしていますか？」",en:"\"What are you doing right now?\"",t:"correct"},{jp:"「お腹が痛いです。」",en:"\"My stomach hurts.\"",t:"funny"}],
+    [{jp:"「ケンジさんの服、かっこいいですね。」",en:"\"Kenji, your clothes look really cool!\"",t:"wrong"},{jp:"「口のまわりに、白いクリームがついていますよ。」",en:"\"There's white cream around your mouth.\"",t:"correct"},{jp:"「テレビを消してください。」",en:"\"Please turn off the TV.\"",t:"funny"}],
+    [{jp:"「犯人は、あなたですね！」",en:"\"You are the culprit, aren't you!\"",t:"wrong"},{jp:"「ごちそうさまでした！」",en:"\"Thank you for the meal!\"",t:"funny"},{jp:"「真実は、いつもひとつ！」",en:"\"The truth is always just one!\"",t:"correct"}]
+  ],
+  fb:[
+    {
+      correct:{hdr:"correct",ico:"✅",lbl:"GOOD MOVE！",spk:"ケンジ",rjp:"ん？テレビを見てるよ。ずっとこの部屋にいるんだ。\n\nハルト：よし、次の質問だ！",ren:"Kenji: \"Hm? I'm watching TV. I've been here the whole time.\"\nHaruto: \"Great, next question!\"",tjp:"「〜をしていますか」は今やっていることを確認する便利な表現。まず状況を聞くのが探偵の基本！",ten:"\"What are you doing?\" is a handy phrase for asking what someone is currently doing. Checking before accusing — detective basics!"},
+      wrong:{hdr:"wrong",ico:"❌",lbl:"FAILED！",spk:"ケンジ",rjp:"えっ、食べてないよ！疑うなんてひどいな！\n\nケンジが怒って出て行った…",ren:"Kenji: \"What?! I didn't eat it! How dare you suspect me!\" (Kenji left angrily...)",tjp:"いきなり疑うのは失礼。まずは穏やかに話しかけるのがコツ。",ten:"Jumping straight to accusations can seem rude. The trick is to start with a calm approach."},
+      funny:{hdr:"funny",ico:"😅",lbl:"OOPS！",spk:"ハルト",rjp:"えぇっ！？大丈夫？…じゃなくて、今はケーキの犯人を探すんだよ！",ren:"Haruto: \"Huh?! Are you okay?! ...Wait, we're supposed to be finding the cake thief!\"",tjp:"「お腹が痛いです」は自分の体の様子を伝える表現。今はケンジのことを聞かないといけなかったね！",ten:"\"My stomach hurts\" describes your own condition. We needed to ask about Kenji, not ourselves!"}
+    },
+    {
+      correct:{hdr:"correct",ico:"🔍",lbl:"EVIDENCE！",spk:"ケンジ",rjp:"えっ！？（あわてて口をふく）…こ、これはお昼のパンのクリームだよ！\n\nハルト：あやしい！お昼はカレーだったはず。最後の追及だ！",ren:"Kenji: \"Wha—?! (frantically wipes mouth) Th-this is cream from bread at lunch!\"\nHaruto: \"Suspicious! We had curry for lunch. Final question!\"",tjp:"「〇〇が〜についています」は何かが付着していることを伝える表現。観察力が鍵！",ten:"\"There's X on your Y\" is the expression for something being attached. Sharp observation is the key!"},
+      wrong:{hdr:"wrong",ico:"❌",lbl:"MISS！",spk:"ハルト",rjp:"服はあとで褒めようよ…！ケンジの顔をよく見て！何か気づかない？",ren:"Haruto: \"We can compliment his clothes later...! Look carefully at Kenji's face!\"",tjp:"「〜かっこいいですね」はほめ言葉。今は証拠を探す場面だったね。",ten:"\"That looks cool!\" is a compliment. Right idea, wrong moment — we needed evidence!"},
+      funny:{hdr:"wrong",ico:"😬",lbl:"WRONG MOVE！",spk:"ケンジ",rjp:"なんで消さなきゃいけないの？\n\nハルト：命令しても証拠は出てこないよ〜！",ren:"Kenji: \"Why do I have to turn it off?\" Haruto: \"Giving orders won't get us evidence!\"",tjp:"「〜してください」は丁寧な指示の表現。でも理由なく命令すると変に聞こえちゃうよ。",ten:"\"Please do X\" is a polite instruction. But ordering without reason sounds strange!"}
+    },
+    {
+      correct:{hdr:"correct",ico:"⚡",lbl:"PERFECT！",spk:"ケンジ",rjp:"ううっ……ごめんなさい！美味しそうだったから、つい食べちゃいました……。\n\nハルト：やったね！名探偵！事件解決だ！",ren:"Kenji: \"Ugh... I'm sorry! It looked so delicious, I couldn't help myself...\"\nHaruto: \"We did it! You're a real detective! Case solved!\"",tjp:"「真実はいつもひとつ！」——名探偵の名ゼリフ！いつも＝always、ひとつ＝one。短くてかっこいい！",ten:"The iconic detective catchphrase! \"いつも\" = always, \"ひとつ\" = one. Short, sharp, super cool!"},
+      wrong:{hdr:"wrong",ico:"😤",lbl:"ALMOST！",spk:"ハルト",rjp:"正しいけど…もっとカッコよく決めようよ！有名な名探偵のセリフ、知ってるでしょ？",ren:"Haruto: \"That's right, but... let's say it cooler! You know the famous detective's line, don't you?\"",tjp:"「犯人はあなたですね」は正しい文章。でもクライマックスにはもっとドラマチックな一言があるはず！",ten:"\"You are the culprit\" is correct Japanese. But for the climax, there's a much more dramatic line!"},
+      funny:{hdr:"funny",ico:"😂",lbl:"HILARIOUS！",spk:"ケンジ",rjp:"え、今食事の場面じゃないけど…（笑）\n\nハルト：もう！なんでごはんの話してるの！",ren:"Kenji: \"Um... we're not eating right now though... (laughs)\" Haruto: \"Why are you talking about food!\"",tjp:"「ごちそうさまでした」は食事の後に言う大切な言葉。でも今は犯人を追い詰める場面だよ！",ten:"\"ごちそうさまでした\" is said after a meal. Very important — but this was a crime scene, not a dining table!"}
+    }
+  ]
+};
+
+let subOn=false, voiceOn=true, curQ=0, pending=null;
+let jpVoice=null, speaking=false;
+
+function initVoice(){
+  if(!window.speechSynthesis){document.getElementById('voice-warn').style.display='block';voiceOn=false;return;}
+  function findVoice(){
+    const voices=speechSynthesis.getVoices();
+    jpVoice=voices.find(v=>v.lang==='ja-JP'&&v.localService)||voices.find(v=>v.lang==='ja-JP')||voices.find(v=>v.lang.startsWith('ja'));
+    if(!jpVoice&&voices.length>0){document.getElementById('voice-warn').style.display='block';}
+  }
+  findVoice();
+  if(speechSynthesis.onvoiceschanged!==undefined){speechSynthesis.onvoiceschanged=findVoice;}
+}
+
+function speak(text){
+  if(!voiceOn||!window.speechSynthesis)return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='ja-JP';
+  u.rate=0.95;
+  u.pitch=1.1;
+  if(jpVoice)u.voice=jpVoice;
+  u.onstart=()=>{speaking=true;};
+  u.onend=()=>{speaking=false;};
+  u.onerror=()=>{speaking=false;};
+  speechSynthesis.speak(u);
+}
+
+function speakEl(id){
+  const el=document.getElementById(id);
+  if(el)speak(el.textContent);
+}
+
+function autoSpeak(text){
+  if(voiceOn)setTimeout(()=>speak(text),300);
+}
+
+function toggleVoice(){
+  voiceOn=!voiceOn;
+  if(!voiceOn&&window.speechSynthesis)speechSynthesis.cancel();
+  const lbl=voiceOn?'🔊 音声: ON':'🔇 音声: OFF';
+  document.getElementById('voice-lbl').textContent=lbl;
+  document.querySelectorAll('.voice-lbl-sm').forEach(e=>e.textContent=voiceOn?'🔊':'🔇');
+  document.querySelectorAll('.pill').forEach(p=>{
+    if(p.querySelector('.voice-lbl-sm')||p.querySelector('#voice-lbl'))p.classList.toggle('on',voiceOn);
+  });
+  document.getElementById('voice-pill').classList.toggle('on',voiceOn);
+}
+
+function toggleSub(){
+  subOn=!subOn;
+  const lbl=subOn?'EN: ON':'EN: OFF';
+  document.getElementById('sub-lbl').textContent=lbl;
+  document.querySelectorAll('.sub-lbl-sm').forEach(e=>e.textContent=subOn?'EN✓':'EN');
+  const tog=sel=>document.querySelectorAll(sel).forEach(e=>e.classList.toggle('show',subOn));
+  tog('.sub-txt');tog('.ch-en');tog('.react-en');tog('.tip-en');tog('.truth-en');tog('.hint-en');tog('.dlg-en');tog('.sc-en');tog('.role-en');
+  const cse=document.getElementById('clr-sub-en');if(cse)cse.style.display=subOn?'inline':'none';
+  document.querySelectorAll('.pill').forEach(p=>{
+    const sm=p.querySelector('.sub-lbl-sm');
+    const main=p.querySelector('#sub-lbl');
+    if(sm||main)p.classList.toggle('on',subOn);
+  });
+}
+
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+
+function renderScene(qi){
+  const c=document.getElementById('q-scene');
+  c.innerHTML=`<div class="scene-emoji">${DATA.sceneEmoji[qi]}</div>
+  <div class="sc-caption"><div class="sc-jp">${DATA.sceneJp[qi]}</div><div class="sc-en${subOn?' show':''}">${DATA.sceneEn[qi]}</div></div>
+  <div class="haruto-wrap"><div class="h-bubble">${DATA.harutoLines[qi]}</div><div class="h-face">🕵️</div></div>`;
+}
+
+function renderQ(){
+  document.getElementById('q-lbl').textContent=`QUESTION ${curQ+1} / 3`;
+  ['d0','d1','d2'].forEach((id,i)=>{const d=document.getElementById(id);d.className='qdot';if(i<curQ)d.classList.add('done');else if(i===curQ)d.classList.add('cur');});
+  renderScene(curQ);
+  const hjp=document.getElementById('hint-jp');hjp.textContent=DATA.hints[curQ];
+  const hen=document.getElementById('hint-en');hen.textContent=DATA.hintsEn[curQ];hen.className='hint-en'+(subOn?' show':'');
+  const ch=document.getElementById('choices');ch.innerHTML='';
+  DATA.choices[curQ].forEach((c,i)=>{
+    const b=document.createElement('button');b.className='ch-btn';
+    b.innerHTML=`<div class="ch-num">${i+1}</div><div class="ch-inner"><div class="ch-jp">${c.jp}</div><div class="ch-en${subOn?' show':''}">${c.en}</div></div><button class="ch-play" onclick="event.stopPropagation();speak('${c.jp.replace(/'/g,"\\'")}')">🔊</button>`;
+    b.onclick=()=>onChoice(c.t,curQ);
+    ch.appendChild(b);
+  });
+  show('question-screen');
+  autoSpeak(DATA.hints[curQ]);
+}
+
+function onChoice(type,qi){
+  pending=type;
+  const fb=DATA.fb[qi][type];
+  const hdr=document.getElementById('fb-hdr');
+  hdr.className='fb-hdr '+fb.hdr;
+  document.getElementById('fb-ico').textContent=fb.ico;
+  document.getElementById('fb-lbl').textContent=fb.lbl;
+  document.getElementById('fb-spk').textContent=fb.spk+'：';
+  document.getElementById('fb-rjp').textContent=fb.rjp;
+  const ren=document.getElementById('fb-ren');ren.textContent=fb.ren;ren.className='react-en'+(subOn?' show':'');
+  document.getElementById('tip-jp').textContent=fb.tjp;
+  const ten=document.getElementById('tip-en');ten.textContent=fb.ten;ten.className='tip-en'+(subOn?' show':'');
+  const btn=document.getElementById('fb-btn');
+  if(type==='correct'){btn.textContent=curQ===2?'🎉 解決！ Case solved!':'つぎへ → Next →';}
+  else{btn.textContent='もう一度 → Try again →';}
+  show('feedback-screen');
+  autoSpeak(fb.rjp);
+}
+
+document.getElementById('fb-btn').onclick=()=>{
+  if(pending==='correct'){
+    if(curQ===2){
+      document.getElementById('case1-badge').textContent='CLEAR！';
+      document.getElementById('case1-badge').className='c-badge b-clear';
+      const cms=["ハルト：やっぱり君は本物の名探偵だ！次の事件も一緒に解決しようね！","ハルト：すごい！全部正解！頭いいね！君は本当の名探偵だよ！"];
+      const cm=cms[Math.floor(Math.random()*cms.length)];
+      document.getElementById('h-cmt').textContent=cm;
+      document.getElementById('truth-en').className='truth-en'+(subOn?' show':'');
+      document.getElementById('clr-sub-en').style.display=subOn?'inline':'none';
+      show('clear-screen');
+      autoSpeak('真実は、いつもひとつ！\n'+cm);
+    }else{curQ++;renderQ();}
+  }else{renderQ();}
+};
+
+document.getElementById('case1-btn').onclick=()=>{
+  curQ=0;pending=null;show('intro-screen');
+  autoSpeak('大変だ！冷蔵庫のケーキがなくなってる！一緒に犯人を見つけよう！');
+};
+document.getElementById('start-btn').onclick=()=>{renderQ();};
+document.getElementById('retry-btn').onclick=()=>{curQ=0;pending=null;renderQ();};
+document.getElementById('title-btn').onclick=()=>{show('title-screen');};
+
+initVoice();
+</script>
